@@ -1,0 +1,902 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MedScope App</title>
+
+<style>
+:root{
+ --bg:#f3f7ff;--card:#fff;--ink:#132238;--muted:#667085;--line:#e4eaf2;
+ --primary:#1769e0;--primary2:#0b3b91;--cyan:#06b6d4;--green:#12b76a;
+ --orange:#f79009;--purple:#7a5af8;--danger:#d92d20;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#edf5ff 0,#f8fbff 38%,#f4f7fb 100%);color:var(--ink)}
+header{background:linear-gradient(135deg,#082f75,#1769e0 58%,#06b6d4);color:#fff;padding:22px clamp(16px,4vw,42px);position:sticky;top:0;z-index:20;box-shadow:0 8px 25px #0b3b9122}
+.brand{display:flex;align-items:center;gap:14px}.logo{width:48px;height:48px;border-radius:15px;background:#ffffff22;border:1px solid #ffffff44;display:grid;place-items:center;font-weight:900;font-size:22px}
+header h1{font-size:21px;margin:0}header small{opacity:.88}
+nav{display:flex;gap:8px;padding:10px clamp(10px,3vw,35px);background:#ffffffeb;backdrop-filter:blur(12px);border-bottom:1px solid var(--line);overflow:auto;position:sticky;top:92px;z-index:19}
+button{border:0;border-radius:11px;padding:10px 14px;font-weight:750;cursor:pointer;background:#e9eff8;color:var(--ink);transition:.18s}
+button:hover{transform:translateY(-1px)}button.primary{background:var(--primary);color:#fff}button.green{background:var(--green);color:#fff}button.danger{background:#fee4e2;color:#991b1b}
+main{max-width:1250px;margin:auto;padding:22px}
+.hero{display:grid;grid-template-columns:1.45fr .8fr;gap:18px;margin-bottom:18px}
+.heroCard{background:linear-gradient(135deg,#ffffff,#f0f7ff);border:1px solid #d9e7fb;border-radius:22px;padding:28px;box-shadow:0 12px 35px #1769e014}
+.heroCard h2{font-size:clamp(25px,4vw,39px);line-height:1.05;margin:0 0 12px}
+.heroCard p{color:var(--muted);line-height:1.6}
+.profileCard{background:#102a43;color:#fff;border-radius:22px;padding:24px;box-shadow:0 12px 35px #102a4330}
+.profileCard .pill{display:inline-block;background:#ffffff18;border:1px solid #ffffff30;padding:6px 10px;border-radius:999px;margin:4px 3px;font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 5px 20px #102a430b}
+.stat b{font-size:28px;display:block;margin-top:5px}.muted{color:var(--muted);font-size:13px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+input,select,textarea{width:100%;padding:12px 13px;border:1px solid #d4dce8;border-radius:11px;background:#fff;color:var(--ink);font:inherit}
+textarea{min-height:90px;resize:vertical}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.full{grid-column:1/-1}
+.tests{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;max-height:430px;overflow:auto;padding:4px}
+.tests label{border:1px solid var(--line);padding:11px;border-radius:11px;background:#fbfdff;cursor:pointer}
+.tests label:has(input:checked){border-color:#7cb0ff;background:#eef6ff}
+.testSearch{margin-bottom:10px}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;background:white}th,td{padding:12px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}th{background:#f7f9fc}
+.badge{padding:5px 9px;border-radius:999px;font-size:12px;font-weight:750}.paid,.ready{background:#dcfce7;color:#166534}.pending{background:#fef3c7;color:#92400e}.collected{background:#dbeafe;color:#1e40af}
+.notice{padding:13px 15px;border-radius:13px;background:#eef6ff;border:1px solid #cfe2ff;color:#194a8a;margin:12px 0}
+.success{padding:14px;border-radius:13px;background:#ecfdf3;border:1px solid #abefc6;color:#067647}
+.locationRow{display:grid;grid-template-columns:1fr auto;gap:9px}
+.profileSection{display:grid;grid-template-columns:1fr 1fr;gap:16px}.profileItem{padding:15px;border-radius:14px;background:#f8fafc;border:1px solid var(--line)}
+.hidden{display:none}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:15px;z-index:50}.modal.show{display:flex}.modalbox{background:white;border-radius:20px;width:min(800px,100%);max-height:94vh;overflow:auto;padding:22px}
+.footer{margin-top:30px;padding:22px;text-align:center;color:var(--muted);font-size:13px}
+@media(max-width:850px){.hero,.profileSection{grid-template-columns:1fr}.grid{grid-template-columns:1fr 1fr}.tests{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){main{padding:12px}.grid,.formgrid{grid-template-columns:1fr}.tests{grid-template-columns:1fr}header{padding:16px}.modalbox{padding:16px}}
+
+.authScreen{position:fixed;inset:0;background:linear-gradient(135deg,#082f75,#1769e0,#06b6d4);display:none;align-items:center;justify-content:center;padding:18px;z-index:100}
+.authScreen.show{display:flex}.authBox{width:min(480px,100%);background:#fff;border-radius:24px;padding:26px;box-shadow:0 25px 70px #001a3d55}
+.roleGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:15px 0}.roleBtn{padding:18px;border:2px solid #e4eaf2;border-radius:15px;background:#fff;text-align:left;cursor:pointer}.roleBtn.active{border-color:#1769e0;background:#eef6ff}
+.otpBoxes{display:flex;gap:8px}.otpBoxes input{width:44px;text-align:center;font-size:20px;font-weight:800}
+.ownerPanel{display:none}.ownerPanel.show{display:block}
+.authError{color:#b42318;background:#fef3f2;border:1px solid #fecdca;padding:10px;border-radius:10px;margin-top:10px}
+
+.ownerNav{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.ownerTab{background:#eef4ff;color:#174ea6}.ownerTab.active{background:#1769e0;color:#fff}
+.ownerPanelCard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:14px;box-shadow:0 5px 20px #102a430b}
+.ownerActions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.ownerAction{padding:18px;text-align:left;background:#fff;border:1px solid var(--line);border-radius:16px;cursor:pointer}
+.ownerAction:hover{border-color:#1769e0;background:#f4f8ff}
+.ownerAction b{display:block;margin-bottom:5px}
+.ownerSub{display:none}.ownerSub.show{display:block}
+@media(max-width:800px){.ownerActions{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.ownerActions{grid-template-columns:1fr}}
+.otpInput{width:44px!important;text-align:center;font-size:20px;font-weight:800}\n
+#patientDetailModal{z-index:300!important}
+#patientDetailModal .modalbox{max-height:88vh;overflow-y:auto}
+#ownerRequestRows tr:hover{background:#f4f8ff}
+
+
+.dashboardGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px}
+.dashCard{padding:16px;border:1px solid #dce7f5;border-radius:16px;background:linear-gradient(145deg,#f8fbff,#fff);display:flex;flex-direction:column;gap:5px;min-height:100px}
+.dashCard span{font-weight:700;color:#29415f}.dashCard strong{font-size:25px;color:#123e7a}.dashCard small{color:#718096}
+@media(max-width:800px){.dashboardGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.dashboardGrid{grid-template-columns:1fr}}
+
+
+.discountBox{background:#f8fbff;border:1px solid #d8e6f7;border-radius:16px;padding:14px;margin-top:14px}
+.billTotal{background:linear-gradient(135deg,#f4f8ff,#eefcff);border:1px solid #cfe2ff;border-radius:16px;padding:16px}
+
+</style>
+
+</head>
+
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">MS</div>
+    <div><h1>MedScope</h1><small>Laboratory testing - Home Collection - Centre Visit</small></div>
+  </div>
+</header>
+<nav>
+  <button class="primary" onclick="show('book')">Book a Test</button>
+  <button onclick="show('publicAbout')">About MedScope</button>
+  <button onclick="openOwnerLogin()" style="margin-left:auto"> Owner</button>
+</nav>
+
+
+<div class="authScreen" id="ownerLoginScreen">
+  <div class="authBox">
+    <div style="text-align:center">
+      <div class="logo" style="margin:auto;background:#1769e0;color:white">MS</div>
+      <h2>Owner Login</h2>
+      <p class="muted">Private MedScope management interface</p>
+    </div>
+    <div class="notice"><b>Owner access only</b><br>This area is not part of the patient interface.</div>
+    <input id="ownerPhone" inputmode="numeric" maxlength="10" placeholder="Owner mobile number">
+    <input id="ownerPassword" type="password" placeholder="Owner password" style="margin-top:10px">
+    <button class="primary" style="width:100%;margin-top:10px" onclick="verifyOwner()">Enter Owner Interface</button>
+    <button style="width:100%;margin-top:8px" onclick="closeOwnerLogin()">Cancel</button>
+    <div id="authError" class="authError hidden"></div>
+  </div>
+</div>
+
+<main>
+<section id="book">
+  <div class="hero">
+    <div class="heroCard">
+      <span class="badge collected">MEDSCOPE LAB SERVICES</span>
+      <h2>Book your laboratory tests easily.</h2>
+      <p>No patient login or OTP is required. Select the tests you need, choose <b>Home Collection</b> or <b>Centre Visit</b>, add your location and submit. Your request will be prepared as a WhatsApp message for MedScope.</p>
+      <button class="primary" onclick="openPatient()">Start Patient Booking </button>
+    </div>
+    <div class="profileCard">
+      <div class="muted" style="color:#b9d3ff">YOUR LAB CONTACT</div>
+      <h2 style="margin:7px 0">Faizan Zahoor Bhatt</h2>
+      <div style="opacity:.9">B.Sc MLT</div>
+      <div style="margin-top:14px">
+        <span class="pill">Phlebotomy</span><span class="pill">Laboratory Testing</span><span class="pill">Home Collection</span>
+      </div>
+      <p style="margin-bottom:0">WhatsApp: <b>6006124059</b></p>
+    </div>
+  </div>
+  <div class="notice"><b>How it works:</b> Patient details  Select tests  Choose collection mode  Share location  Submit  WhatsApp request.</div>
+</section>
+
+
+
+
+
+
+
+
+<section id="publicAbout" class="hidden">
+  <div class="heroCard">
+    <span class="badge collected">ABOUT MEDSCOPE</span>
+    <h2>MedScope Owner & Professional Profile</h2>
+    <p><b>Faizan Zahoor Bhatt</b><br>B.Sc MLT</p>
+    <div class="profileSection">
+      <div class="profileItem"><b> B.Sc MLT</b><p class="muted">Bachelor of Science in Medical Laboratory Technology</p></div>
+      <div class="profileItem"><b> Advanced Cardiac Life Support (ACLS)</b><p class="muted">Save a Life Certifications by NHCPs - Completed 28 December 2025</p></div>
+      <div class="profileItem"><b> CPR, AED & First Aid</b><p class="muted">Save a Life Certifications by NHCPs - Completed 28 December 2025</p></div>
+      <div class="profileItem"><b> Stanford Medicine CME</b><p class="muted">Hypertension in Primary Care - Improving Control and Reducing Risk - 1.50 hours - 1.50 AMA PRA Category 1 Credit - 30 July 2026</p></div>
+      <div class="profileItem"><b> Bloodborne Pathogens</b><p class="muted">Bloodborne Pathogens training/certificate - 2024</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="about" class="hidden">
+  <h2>About Me</h2>
+  <div class="profileSection">
+    <div class="profileItem"><b>Faizan Zahoor Bhatt</b><p class="muted">B.Sc MLT</p></div>
+    <div class="profileItem"><b>Professional Focus</b></div>
+    <div class="profileItem"><b>Certifications / Training</b><p class="muted">LIRS - RMLT - MLS - CLSA</p></div>
+    <div class="profileItem"><b>Experience</b><p class="muted">Laboratory testing, phlebotomy, patient interaction, sample collection and home collection services.</p></div>
+  </div>
+  <div class="card" style="margin-top:16px"><h3>MedScope Services</h3><p class="muted">Patient registration, laboratory test selection, centre visits, home sample collection and patient/sample tracking.</p><button class="primary" onclick="openPatient()">Book a Test</button></div>
+</section>
+
+
+
+<section id="ownerArea" class="hidden">
+  <h2> MedScope Owner Interface</h2>
+  <div class="success"><b>Owner access active.</b> Your login is remembered on this device. Use Lock Owner Interface to require login again.</div>
+
+  <div class="ownerActions">
+    <button class="ownerAction" onclick="ownerTab('dashboard')"><b> Dashboard</b><span class="muted">Sales, patients, collections, payments and performance.</span></button>
+    <button class="ownerAction" onclick="ownerTab('requests')"><b> Patient Requests</b><span class="muted">View incoming bookings and patient details.</span></button>
+    <button class="ownerAction" onclick="ownerTab('rates')"><b> Tests & Rates</b><span class="muted">Search and change your 456 test rates.</span></button>
+    <button class="ownerAction" onclick="ownerTab('profile')"><b> My Profile</b><span class="muted">View the professional details shown to patients.</span></button>
+    <button class="ownerAction" onclick="ownerTab('whatsapp')"><b> WhatsApp</b><span class="muted">Open WhatsApp for incoming patient requests.</span></button>
+  </div>
+
+
+  <div id="ownerDashboard" class="ownerSub">
+    <div class="ownerPanelCard">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div>
+          <h3 style="margin-bottom:4px"> MedScope Business Dashboard</h3>
+          <p class="muted">Track patients, sample collections and actual paid revenue.</p>
+        </div>
+        <button class="primary" onclick="renderDashboard()"> Refresh</button>
+      </div>
+
+      <div class="dashboardGrid">
+        <div class="dashCard"><span> Patient Requests</span><strong id="dashRequests">0</strong><small>All bookings</small></div>
+        <div class="dashCard"><span> Patients</span><strong id="dashPatients">0</strong><small>Unique patients</small></div>
+        <div class="dashCard"><span> Samples Collected</span><strong id="dashSamples">0</strong><small>Marked collected</small></div>
+        <div class="dashCard"><span> Total Paid</span><strong id="dashRevenue">INR 0</strong><small>Confirmed payments</small></div>
+        <div class="dashCard"><span> Cash Collected</span><strong id="dashCash">INR 0</strong><small>Paid cash</small></div>
+        <div class="dashCard"><span> UPI / Online</span><strong id="dashOnline">INR 0</strong><small>Paid online</small></div>
+        <div class="dashCard"><span> Pending Dues</span><strong id="dashPending">INR 0</strong><small>Not yet marked paid</small></div>
+        <div class="dashCard"><span> Tests Ordered</span><strong id="dashTests">0</strong><small>Total test selections</small></div>
+      </div>
+
+      <h3 style="margin-top:24px">Revenue Snapshot</h3>
+      <div class="dashboardGrid">
+        <div class="dashCard"><span>Today</span><strong id="dashToday">INR 0</strong><small>Paid today</small></div>
+        <div class="dashCard"><span>This Month</span><strong id="dashMonth">INR 0</strong><small>Paid this month</small></div>
+        <div class="dashCard"><span>This Year</span><strong id="dashYear">INR 0</strong><small>Paid this year</small></div>
+        <div class="dashCard"><span>Average Bill</span><strong id="dashAverage">INR 0</strong><small>Per booking</small></div>
+      </div>
+
+      <h3 style="margin-top:24px">Collection & Payment Breakdown</h3>
+      <div id="dashBreakdown" class="notice"></div>
+
+      <h3 style="margin-top:24px">Recent Business Activity</h3>
+      <div id="dashRecent" class="profileSection"></div>
+    </div>
+  </div>
+
+  <div id="ownerRequests" class="ownerSub show">
+    <div class="ownerPanelCard">
+      <h3>Patient Requests</h3>
+      <div class="toolbar"><input id="ownerSearch" placeholder="Search patient name, phone or location..." oninput="renderOwnerRequests()"></div>
+      <div class="tablewrap"><table><thead><tr><th>Patient</th><th>Contact</th><th>Service</th><th>Location</th><th>Tests</th><th>Payment</th><th>Total</th><th>Action</th></tr></thead><tbody id="ownerRequestRows"></tbody></table></div>
+    </div>
+  </div>
+
+  <div id="ownerRates" class="ownerSub">
+    <div class="ownerPanelCard">
+      <h3>Tests & Rates</h3>
+      <p class="muted">Search, edit and save rates. Changes are stored on this device.</p>
+      <div id="ownerTestEditor"></div>
+    </div>
+  </div>
+
+  <div id="ownerProfile" class="ownerSub">
+    <div class="ownerPanelCard">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
+        <div>
+          <span class="badge collected">MEDSCOPE OWNER</span>
+          <h3 style="font-size:25px;margin:9px 0 4px">Faizan Zahoor Bhatt</h3>
+          <p class="muted" style="font-size:15px">B.Sc MLT - Laboratory & Patient Care Professional</p>
+        </div>
+        <div class="profileItem" style="min-width:190px">
+          <b>Professional Focus</b>
+          
+        </div>
+      </div>
+
+      <div class="notice" style="margin-top:18px">
+        <b>About MedScope</b><br>
+        MedScope is a patient-focused laboratory service built around convenient test booking,
+        home sample collection and centre visits. Patients can select their required investigations,
+        share their location and send their request directly through WhatsApp.
+      </div>
+
+      <h3 style="margin-top:24px">Credentials & Certifications</h3>
+      <p class="muted">Professional education, clinical training and continuing education completed by the MedScope owner.</p>
+
+      <div class="profileSection">
+        <div class="profileItem">
+          <b> B.Sc MLT</b>
+          <p class="muted">Bachelor of Science in Medical Laboratory Technology</p>
+        </div>
+
+        <div class="profileItem">
+          <b> Advanced Cardiac Life Support (ACLS)</b>
+          <p class="muted">Save a Life Certifications by NHCPs - Certificate of Completion - Completed 28 December 2025</p>
+        </div>
+
+        <div class="profileItem">
+          <b> CPR, AED, and First Aid</b>
+          <p class="muted">Save a Life Certifications by NHCPs - Certificate of Completion - Completed 28 December 2025</p>
+        </div>
+
+        <div class="profileItem">
+          <b> Stanford Medicine CME</b>
+          <p class="muted">Hypertension in Primary Care - Improving Control and Reducing Risk - 1.50 hours - 1.50 AMA PRA Category 1 Credit - 30 July 2026</p>
+        </div>
+
+        <div class="profileItem">
+          <b> Bloodborne Pathogens</b>
+          <p class="muted">Bloodborne Pathogens training/certificate - 2024</p>
+        </div>
+</div>
+</div>
+  </div>
+
+  <div id="ownerWhatsapp" class="ownerSub">
+    <div class="ownerPanelCard">
+      <h3>WhatsApp</h3>
+      <p class="muted">Patient booking requests are directed to your WhatsApp number.</p>
+      <button class="green" onclick="window.location.href='https://wa.me/916006124059'">Open WhatsApp - 6006124059</button>
+    </div>
+  </div>
+
+  <button class="danger" style="margin-top:15px" onclick="logout()"> Lock Owner Interface</button>
+</section>
+
+<div class="modal" id="patientDetailModal"><div class="modalbox">
+  <div id="patientDetailBody"></div>
+  <button style="margin-top:10px" onclick="closePatientDetail()">Close</button>
+</div></div>
+
+</div>
+
+<div class="footer"> MedScope - Patient booking - WhatsApp 6006124059</div>
+</main>
+
+<div class="modal" id="modal"><div class="modalbox">
+  <h2>Patient Booking</h2>
+  <p class="muted">Fill in your details and select the tests you require.</p>
+  <div class="formgrid">
+    <input id="name" placeholder="Patient full name *" class="full">
+    <input id="age" type="number" placeholder="Age">
+    <select id="sex"><option>Male</option><option>Female</option><option>Other</option></select>
+    <input id="phone" placeholder="Patient WhatsApp / phone *">
+    <input id="doctor" placeholder="Referring doctor (optional)">
+    <select id="mode" class="full"><option>Home Collection</option><option>Centre Visit</option></select>
+    <div class="full">
+      <label><b>Patient location *</b></label>
+      <div class="locationRow" style="margin-top:7px"><input id="location" placeholder="Area / address / landmark"><button type="button" class="green" onclick="getLocation()">Use GPS</button></div>
+      <div id="gpsStatus" class="muted" style="margin-top:5px"></div>
+    </div>
+    <div class="full">
+      <b>Select required tests *</b>
+      <input id="testFilter" class="testSearch" placeholder="Search tests..." oninput="renderChoices()">
+      <div class="tests" id="testChoices"></div>
+    </div>
+    <select id="sample" class="full"><option>Serum</option><option>EDTA</option><option>Fluoride</option><option>Citrate</option><option>Urine</option><option>Other</option></select>
+    <div class="full">
+      <b>Payment method *</b>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+        <label class="profileItem" style="cursor:pointer"><input type="radio" name="paymentMethod" value="Cash" checked onchange="toggleOnlinePayment()">  Cash</label>
+        <label class="profileItem" style="cursor:pointer"><input type="radio" name="paymentMethod" value="Online" onchange="toggleOnlinePayment()">  Pay Online</label>
+      </div>
+      <div id="onlinePaymentInfo" class="notice hidden" style="margin-top:10px">
+        Online payment selected. Your MedScope payment QR/UPI details will appear here once configured.
+      </div>
+    </div>
+    <textarea id="notes" class="full" placeholder="Any additional information / preferred collection time"></textarea>
+  </div>
+  <div class="notice"><b>Estimated total:</b> <span id="total">INR 0</span><br><span class="muted">The request will open in WhatsApp with the patient details and selected tests.</span></div>
+  <div style="display:flex;justify-content:flex-end;gap:8px"><button onclick="closeModal()">Cancel</button><button class="primary" onclick="savePatient()">Book via WhatsApp</button></div>
+</div></div>
+
+
+
+<script>
+const defaultTests = [{"id":1,"name":"CBC-6 Part & PBF (Reported by Pathologist / Hematologist)","price":300},{"id":2,"name":"HB/HCT","price":150},{"id":3,"name":"CBC-6 Part + PBF with MP (Reported by Pathologist / Hematologist)","price":350},{"id":4,"name":"CBC-6 Part & PBF ( Reported by Pathologist / Hematologist )","price":300},{"id":5,"name":"CBC-6 + PBF & Platelet O (Reported by Pathologist / Hematologist)","price":350},{"id":6,"name":"CBC-6 +PBF & Platelet F (Reported by Pathologist / Hematologist)","price":350},{"id":7,"name":"Platelet-F (Reported by Pathologist / Hematologist)","price":220},{"id":8,"name":"CBC-6 + PBF & Retic Count (Reported by Pathologist / Hematologist)","price":350},{"id":9,"name":"Reticulocyte Count ( Automatic by Analyser )","price":250},{"id":10,"name":"Haemoglobin (Hb)","price":60},{"id":11,"name":"HCT","price":100},{"id":12,"name":"PBF for MP ( Reported by Pathologist / Hematologist )","price":200},{"id":13,"name":"Blood Group with Rh","price":90},{"id":14,"name":"MP Antigen Test","price":400},{"id":15,"name":"PBF ( Reported by Pathologist / Hematologist on thick blood smear )","price":150},{"id":16,"name":"LDbodies","price":200},{"id":17,"name":"Blood Group with Rh","price":200},{"id":18,"name":"Platelet Count (Analyser + Reported by Pathologist / Hematologist )","price":150},{"id":19,"name":"Plasma Hb","price":350},{"id":20,"name":"Indirect Coombs Test (ICT)","price":500},{"id":21,"name":"Direct coombs Test (DCT)","price":400},{"id":22,"name":"ESR (Westergren's) (Automatic ESL-30)","price":80},{"id":23,"name":"Osmotic Fragility Test ( Reported by Pathologist / Hematologist )","price":470},{"id":24,"name":"HB Variant (Electrophorosis)","price":1000},{"id":25,"name":"Indirect Coombs Test (ICT) with titer","price":1500},{"id":26,"name":"PT INR ( SYSMEX CS-2400)","price":230},{"id":27,"name":"APTT / PTTK ( SYSMEX CS-2400)","price":350},{"id":28,"name":"Lupus Anti Coagulant ( SYSMEX CS-2400)","price":600},{"id":29,"name":"D Dimer","price":900},{"id":30,"name":"PT/APTT ( SYSMEX CS-2400)","price":550},{"id":31,"name":"PT/APTT/PLT","price":650},{"id":32,"name":"COAG (PT/APTT/PLT/BT)","price":700},{"id":33,"name":"Thrombin Time (TT)","price":350},{"id":34,"name":"D Dimer","price":900},{"id":35,"name":"Factor VIII Activity ( SYSMEX CS-2400)","price":1600},{"id":36,"name":"Fibrinogen ( SYSMEX CS-2400)","price":500},{"id":37,"name":"Cryoglobulin:","price":150},{"id":38,"name":"Sputum for eosinophil","price":200},{"id":39,"name":"Urine For Haemoglobin (Hb)","price":70},{"id":40,"name":"Urine hemosidrin","price":200},{"id":41,"name":"Factor XIII Assay","price":7000},{"id":42,"name":"Sputum for hemosidrin","price":200},{"id":43,"name":"Platelet (O) (Sysmex 6 Part)","price":220},{"id":44,"name":"vW Factor","price":8000},{"id":45,"name":"Myeloma Profile","price":8000},{"id":46,"name":"Bleeding Time (BT) IV Method","price":70},{"id":47,"name":"Clotting time (CT) Tube Method","price":70},{"id":48,"name":"BT CT","price":140},{"id":49,"name":"Blood Sugar Fasting (BSF)","price":60},{"id":50,"name":"Blood Sugar Post Prandial (BSPP)","price":60},{"id":51,"name":"Blood Sugar Random (BSR)","price":60},{"id":52,"name":"Blood Urea","price":90},{"id":53,"name":"Creatinine","price":100},{"id":54,"name":"Uric Acid","price":90},{"id":55,"name":"Cholesterol Total","price":110},{"id":56,"name":"Triglecerides (TG)","price":150},{"id":57,"name":"HDL Cholesterol","price":200},{"id":58,"name":"LDL Cholesterol","price":250},{"id":59,"name":"Bilirubin-Total","price":90},{"id":60,"name":"Bilirubin-Direct","price":90},{"id":61,"name":"SGOT / AST","price":90},{"id":62,"name":"SGPT / ALT","price":90},{"id":63,"name":"Alkaline Phosphatase (ALP)","price":140},{"id":64,"name":"GGT","price":200},{"id":65,"name":"Total Protein","price":90},{"id":66,"name":"Albumin","price":90},{"id":67,"name":"HbA1c","price":370},{"id":68,"name":"Sodium","price":170},{"id":69,"name":"Potassium","price":170},{"id":70,"name":"Chloride","price":200},{"id":71,"name":"Calcium","price":150},{"id":72,"name":"Phosphorus","price":200},{"id":73,"name":"Amylase","price":350},{"id":74,"name":"Lipase","price":500},{"id":75,"name":"LDH","price":300},{"id":76,"name":"Ammonia","price":700},{"id":77,"name":"Magnesium","price":400},{"id":78,"name":"Calcium-Ionised","price":200},{"id":79,"name":"Thyroglobulin:","price":1200},{"id":80,"name":"Acid Phosphatase","price":450},{"id":81,"name":"CPK Total","price":300},{"id":82,"name":"CPK-MB","price":600},{"id":83,"name":"Iron","price":150},{"id":84,"name":"CRP-HS","price":250},{"id":85,"name":"Lactate","price":700},{"id":86,"name":"Adenosine Deaminase (ADA)","price":500},{"id":87,"name":"Lipo-protein a - LP(a)","price":900},{"id":88,"name":"Angiotensin Converting Enzyme (ACE)","price":1000},{"id":89,"name":"G6PD","price":500},{"id":90,"name":"Protein-CSF","price":180},{"id":91,"name":"Chloride-CSF","price":220},{"id":92,"name":"Albumin-CSF","price":300},{"id":93,"name":"Sugar-CSF","price":70},{"id":94,"name":"GTT (3 hrs) 100gm Glucose ( 4 Samples)","price":230},{"id":95,"name":"GTTF 1, 2HR 75gm Glucose ( 3 Samples)","price":200},{"id":96,"name":"GCT Fasting","price":140},{"id":97,"name":"GCT Random","price":70},{"id":98,"name":"DIPSI","price":70},{"id":99,"name":"GTT (4 hr)","price":290},{"id":100,"name":"GTT (5 hr)","price":350},{"id":101,"name":"Lipid Profile ( 6 Parameters )","price":550},{"id":102,"name":"KFT ( 7 Parameters )","price":450},{"id":103,"name":"LFT ( 10 Parameters )","price":450},{"id":104,"name":"Iron Profile","price":400},{"id":105,"name":"Electrolytes (Na, K, Calcium)","price":350},{"id":106,"name":"24 Hrs CREAT CL","price":250},{"id":107,"name":"UREA","price":90},{"id":108,"name":"BSF & PP","price":120},{"id":109,"name":"BSF & BSPG","price":120},{"id":110,"name":"Gesta Diabetes 75gm Glucose ( 3 Samples)","price":200},{"id":111,"name":"Bilirubun Direct/Ind","price":180},{"id":112,"name":"Gesta Diabetes 100","price":280},{"id":113,"name":"KFT ( 4 Parameters )","price":250},{"id":114,"name":"CERULOPLASMIN","price":1000},{"id":115,"name":"PCOD Profile ( 8 Parameters / Tests)","price":3000},{"id":116,"name":"VENOUS BLOOD GAS","price":600},{"id":117,"name":"Dual Marker","price":2500},{"id":118,"name":"FREE LITE CHAINS(K&L) (Roche)","price":4000},{"id":119,"name":"FLC Kappa (Free Light Chain)","price":2000},{"id":120,"name":"FLC Lambda (Free Light Chain)","price":2000},{"id":121,"name":"ARTERIAL BLOOD GAS","price":600},{"id":122,"name":"Rheumatoid Factor (RA Factor)","price":220},{"id":123,"name":"Antistreptolysin O Titre (ASO)","price":250},{"id":124,"name":"C3- COMPLIMENT 3","price":550},{"id":125,"name":"C4- COMPLIMENT 4","price":550},{"id":126,"name":"24 Hrs URINARY AMYLA","price":450},{"id":127,"name":"SPOT URINE FOR CHLORIDE","price":200},{"id":128,"name":"SPOT URINE FOR AMYLASE","price":400},{"id":129,"name":"SPOT URINE FOR Sodium","price":200},{"id":130,"name":"SPOT URINE FOR Potassium","price":200},{"id":131,"name":"SPOT URINE FOR Creatinine","price":200},{"id":132,"name":"SPOT URINE FOR Microalbumin","price":350},{"id":133,"name":"SPOT URINE FOR Protein","price":200},{"id":134,"name":"SPOT URINE FOR URIC ACID","price":200},{"id":135,"name":"SPOT URINE FOR Calcium","price":200},{"id":136,"name":"SPOT URINE FOR PROTEIN : CREATININE RATIO","price":350},{"id":137,"name":"SPOT URINE FOR ALBUMIN : PROTEIN RATIO","price":350},{"id":138,"name":"SPOT URINE FOR ALBUMIN : CREATININE RATIO","price":500},{"id":139,"name":"SPOT URINE FOR Urea","price":200},{"id":140,"name":"SPOT URINE FOR Phosphorus","price":200},{"id":141,"name":"24 HOURS URINE FOR Total Protein","price":220},{"id":142,"name":"24 HRS URINARY Uric Acid","price":220},{"id":143,"name":"24 HRS URINARY Urea","price":220},{"id":144,"name":"24 HRS URINARY MAGNESIUM","price":450},{"id":145,"name":"24 HRS URINARY AMYLASE","price":450},{"id":146,"name":"24 HRS URINARY CALCIUM","price":220},{"id":147,"name":"24 HRS URINARY CREATININE","price":220},{"id":148,"name":"24 HRS URINARY SODIUM","price":220},{"id":149,"name":"24 HRS URINARY PHOSPHORUS","price":200},{"id":150,"name":"24 HRS URINARY POTASSIUM","price":220},{"id":151,"name":"24 HRS URINARY CHLORIDE","price":220},{"id":152,"name":"24 HRS URINARY micro Albumin","price":400},{"id":153,"name":"VENOUS BLOOD GAS ANALYSIS (VBG)","price":650},{"id":154,"name":"Anti-SARS-CoV-2-S","price":1300},{"id":155,"name":"Report on Bone Marrow Aspiration/slides","price":700},{"id":156,"name":"BM-BIOPSY","price":2000},{"id":157,"name":"Bone Marrow Asp.","price":1000},{"id":158,"name":"Report on Bone Marrow Aspiration/slides","price":700},{"id":159,"name":"Reticulin stain","price":850},{"id":160,"name":"PAS stain","price":700},{"id":161,"name":"BM A/S/B","price":1500},{"id":162,"name":"BM-BIOPSY ( Aspiration, Biopsy, Needle, CBC with reporting )","price":7000},{"id":163,"name":"BM-BIOPSY (BM Aspiration & Reporting)","price":5000},{"id":164,"name":"Thyroid Profile (T)","price":500},{"id":165,"name":"Thyroid Prof. Free","price":800},{"id":166,"name":"Torch Profile - IgG","price":1300},{"id":167,"name":"Torch Profile - IgM","price":1250},{"id":168,"name":"Anti Phospholipid","price":1500},{"id":169,"name":"LH/ FSH/ PRO","price":1200},{"id":170,"name":"Immunglobulin Assay","price":850},{"id":171,"name":"IgA","price":300},{"id":172,"name":"IgM","price":300},{"id":173,"name":"IgG","price":300},{"id":174,"name":"TSH &T4","price":400},{"id":175,"name":"TSH & FT4","price":550},{"id":176,"name":"ANA (euromin) (Immunoblot)","price":2000},{"id":177,"name":"ANTI - ds DNA (Reported by Pathologist / Hematologist)","price":1200},{"id":178,"name":"Anti - CCP","price":1000},{"id":179,"name":"Quantiferon TB Gold","price":2700},{"id":180,"name":"Total IgE","price":650},{"id":181,"name":"Anti Cardiolipin Antibodies IgG/IgM/IgA - ACLA","price":1200},{"id":182,"name":"Anti Nuclear Antibody (ANA)","price":1200},{"id":183,"name":"Anti Phospholipid Screen IgG/IgM - APLA","price":1500},{"id":184,"name":"Anti HAV IgM","price":1000},{"id":185,"name":"HBs Ag (CLIA)","price":450},{"id":186,"name":"Anti HCV","price":700},{"id":187,"name":"Anti HEV IgM","price":1100},{"id":188,"name":"Anti HEV IgM","price":1100},{"id":189,"name":"Anti HCV (CMIA)","price":700},{"id":190,"name":"Anti HAV IgM","price":1000},{"id":191,"name":"HAVAb-IgM:","price":1000},{"id":192,"name":"Anti - HBs","price":800},{"id":193,"name":"Vitamin B12","price":1000},{"id":194,"name":"Folic Acid","price":900},{"id":195,"name":"Ferritin","price":550},{"id":196,"name":"Vitamin-D Total","price":900},{"id":197,"name":"Cortisol (Morning)","price":550},{"id":198,"name":"Cortisol (Evening)","price":550},{"id":199,"name":"Insulin (Fasting)","price":680},{"id":200,"name":"INTACT PTH","price":1200},{"id":201,"name":"Insulin PP","price":680},{"id":202,"name":"Insulin Random","price":680},{"id":203,"name":"Cortisol (Random)","price":550},{"id":204,"name":"HIV Ag/Ab","price":550},{"id":205,"name":"Toxo IgG","price":500},{"id":206,"name":"Rubella IgG","price":500},{"id":207,"name":"CMV IgG","price":500},{"id":208,"name":"HSV IgG","price":500},{"id":209,"name":"Toxoplasma IgM","price":500},{"id":210,"name":"Rubella IgM","price":500},{"id":211,"name":"CMV IgM","price":500},{"id":212,"name":"HSV IgM","price":500},{"id":213,"name":"HSV CSF","price":500},{"id":214,"name":"AFP","price":750},{"id":215,"name":"BHCG","price":650},{"id":216,"name":"CEA","price":550},{"id":217,"name":"PSA","price":600},{"id":218,"name":"CA-125","price":1000},{"id":219,"name":"CA 19.9","price":1150},{"id":220,"name":"Beta-2 Microglobulin","price":1000},{"id":221,"name":"BHCG FLUID","price":650},{"id":222,"name":"CA 19.9 fluid","price":1150},{"id":223,"name":"CEA Fluid","price":550},{"id":224,"name":"FT3","price":350},{"id":225,"name":"FT4","price":350},{"id":226,"name":"T3","price":200},{"id":227,"name":"T4","price":200},{"id":228,"name":"TSH","price":200},{"id":229,"name":"Anti TG","price":1200},{"id":230,"name":"Anti TPO","price":1000},{"id":231,"name":"ASMA (Reported by Pathologist / Hematologist)","price":1200},{"id":232,"name":"AMA (Reported by Pathologist / Hematologist)","price":1200},{"id":233,"name":"ANCA Profile","price":1800},{"id":234,"name":"ANCA-GBM","price":2300},{"id":235,"name":"Anti GBM","price":1800},{"id":236,"name":"LKM (EURO-IMMUNE- Reported by Pathologist / Hematologist)","price":1500},{"id":237,"name":"ASMA (Reported by Pathologist / Hematologist)","price":1500},{"id":238,"name":"ALLERGY PANEL","price":4000},{"id":239,"name":"LH","price":450},{"id":240,"name":"FSH","price":450},{"id":241,"name":"LH / FSH","price":900},{"id":242,"name":"Serum Prolactin","price":450},{"id":243,"name":"Estradiol (E2)","price":550},{"id":244,"name":"17 Alpha-OH PROGESTRONE","price":700},{"id":245,"name":"Testosterone - Total","price":550},{"id":246,"name":"Anti Mullerian Hormone (AMH)","price":1800},{"id":247,"name":"DHEA-S:","price":900},{"id":248,"name":"Serum Progesterone","price":550},{"id":249,"name":"Beta2Glycoprotein","price":2500},{"id":250,"name":"Procalcitonin","price":2300},{"id":251,"name":"NT-proBNP2","price":1600},{"id":252,"name":"EBV","price":1500},{"id":253,"name":"NT-proBNP2","price":1600},{"id":254,"name":"TORCH Profile - IgM","price":1600},{"id":255,"name":"Liver Disease Panel","price":4000},{"id":256,"name":"IL-6","price":1500},{"id":257,"name":"D-Dimer:","price":900},{"id":258,"name":"SARS-CoV-IgG","price":1300},{"id":259,"name":"Dengue (NS1/IgM/IgG)","price":700},{"id":260,"name":"Echinococcus IgG","price":800},{"id":261,"name":"H Pylori Antibodies","price":1200},{"id":262,"name":"TRIPLE SEROLOGY","price":550},{"id":263,"name":"Troponin - I (Quantitative)","price":900},{"id":264,"name":"Troponin - T (Qualitative)","price":1000},{"id":265,"name":"Serum Protein Electrophoresis (Reported by Pathologist / Hematologist)","price":800},{"id":266,"name":"IMMUNOFIXATION ELECT. (Reported by Pathologist / Hematologist)","price":4000},{"id":267,"name":"Urine Electrophoresis (Reported by Pathologist / Hematologist)","price":1200},{"id":268,"name":"OCB (Reported by Pathologist / Hematologist)","price":1200},{"id":269,"name":"TPHA","price":500},{"id":270,"name":"VDRL","price":200},{"id":271,"name":"VDRL","price":200},{"id":272,"name":"MONOSPOT","price":250},{"id":273,"name":"HBs Ag (card)","price":150},{"id":274,"name":"HCV (Rapid) Card","price":200},{"id":275,"name":"HIV 1 & 2 Rapid","price":200},{"id":276,"name":"F.LITE CHAINS(K&L)","price":4000},{"id":277,"name":"Anti Tissue Transglutaminase (tTG) IgA","price":1000},{"id":278,"name":"Typhoid IgG/IgM","price":450},{"id":279,"name":"Drug Screen in Urine","price":650},{"id":280,"name":"sucrose lysis test","price":300},{"id":281,"name":"Stool Analysis","price":90},{"id":282,"name":"URINE 24 HRS MICROALBUMIN","price":400},{"id":283,"name":"Urine Examination (Automation)","price":130},{"id":284,"name":"pH (Urine)","price":100},{"id":285,"name":"Urine for Bence Jones Protein","price":150},{"id":286,"name":"Urine Pregnancy","price":100},{"id":287,"name":"Urine eosinophil","price":200},{"id":288,"name":"Urine for dysmorphic RBC'S","price":320},{"id":289,"name":"Stool eosinophil","price":200},{"id":290,"name":"Stool for Occult Blood","price":150},{"id":291,"name":"Stool for H. Pylori","price":400},{"id":292,"name":"Lactate","price":700},{"id":293,"name":"Ascitic Fluid Amylase","price":400},{"id":294,"name":"Pleural Fluid Amylase","price":400},{"id":295,"name":"pH (Fluid)","price":200},{"id":296,"name":"Synovial Fluid Exam (Reported by Pathologist / Hematologist)","price":300},{"id":297,"name":"BAL FLUID FUNGUS (Reported by Pathologist / Hematologist)","price":200},{"id":298,"name":"VITREOUS FLUID EXAM (Reported by Pathologist / Hematologist)","price":300},{"id":299,"name":"FLUID FOR CYTOLOGY (Reported by Pathologist / Hematologist)","price":350},{"id":300,"name":"Hct (Fluid):","price":100},{"id":301,"name":"CYTO/MALIGNANT (Reported by Pathologist / Hematologist)","price":500},{"id":302,"name":"Glucose","price":70},{"id":303,"name":"Protein","price":80},{"id":304,"name":"Sugar","price":70},{"id":305,"name":"Proteins","price":80},{"id":306,"name":"LDH","price":300},{"id":307,"name":"Albumin","price":80},{"id":308,"name":"Amylase","price":400},{"id":309,"name":"Lipase","price":500},{"id":310,"name":"Cholesterol","price":120},{"id":311,"name":"Triglecerides","price":120},{"id":312,"name":"Bilirubin (Total)","price":80},{"id":313,"name":"ALP","price":120},{"id":314,"name":"FLUID FOR CHEMISTRY","price":150},{"id":315,"name":"Rhematoid Factor (RA Factor)","price":200},{"id":316,"name":"creatinine (fluid)","price":90},{"id":317,"name":"Uric Acid (fluid)","price":80},{"id":318,"name":"urea (fluid)","price":80},{"id":319,"name":"Cytology","price":200},{"id":320,"name":"Malignant Cell (Reported by Pathologist / Hematologist)","price":250},{"id":321,"name":"LDH","price":250},{"id":322,"name":"Amylase","price":300},{"id":323,"name":"Lipase","price":450},{"id":324,"name":"CRPTOCOCCUS","price":200},{"id":325,"name":"Complete Semen Analysis - SQA (Auto-analyser)","price":1000},{"id":326,"name":"Fructose","price":150},{"id":327,"name":"AUTO AEROBIC CULTURE URINE","price":400},{"id":328,"name":"AUTO AEROBIC CULTURE BLOOD","price":800},{"id":329,"name":"AUTO AEROBIC CULTURE PUS","price":400},{"id":330,"name":"AUTO AEROBIC CULTURE SPUTUM","price":400},{"id":331,"name":"AUTO AEROBIC CULTURE STOOL","price":400},{"id":332,"name":"AUTO AEROBIC CULTURE DISCHARGE ASPIRATE","price":400},{"id":333,"name":"AUTO AEROBIC CULTURE SEMEN","price":400},{"id":334,"name":"AUTO AEROBIC CULTURE EYE 'RT'","price":400},{"id":335,"name":"AUTO AEROBIC CULTURE EYE 'LT'","price":400},{"id":336,"name":"AUTO AEROBIC CULTURE PLEURAL FLUID","price":400},{"id":337,"name":"AUTO AEROBIC CULTURE ASCITIC FLUID","price":400},{"id":338,"name":"AUTO AEROBIC CULTURE FLUID","price":400},{"id":339,"name":"AUTO AEROBIC CULTURE MILK","price":400},{"id":340,"name":"AUTO AEROBIC CULTURE EAR SWAB L","price":400},{"id":341,"name":"AUTO AEROBIC CULTURE EAR SWAB R","price":400},{"id":342,"name":"AUTO AEROBIC CULTURE THROAT SWAB","price":400},{"id":343,"name":"AUTO AEROBIC CULTURE VAGINAL","price":400},{"id":344,"name":"AUTO AEROBIC CULTURE SWAB","price":400},{"id":345,"name":"AUTO AEROBIC CULTURE OTHERS","price":400},{"id":346,"name":"AUTO AEROBIC CULTURE CSF","price":400},{"id":347,"name":"Throat Swab For AFB","price":250},{"id":348,"name":"Throat Swab for fung","price":250},{"id":349,"name":"Gram Stain (Sputum)","price":250},{"id":350,"name":"Gram Stain (Body Fluid)","price":250},{"id":351,"name":"GRAM STAIN (URINE)","price":250},{"id":352,"name":"Gram Satin (Bronchi)","price":250},{"id":353,"name":"Gram Stain (PUS)","price":250},{"id":354,"name":"GRAM STAIN(TRACHEAL)","price":250},{"id":355,"name":"Gram Stain(Ascitic Fluid)","price":250},{"id":356,"name":"GRAM STAIN (SWAB)","price":250},{"id":357,"name":"GRAM STAIN (PERITONIAL FLUID)","price":250},{"id":358,"name":"GRAM STAIN(AQUEOUS)","price":250},{"id":359,"name":"GRAM STAIN (CONJUCTIVAL)","price":250},{"id":360,"name":"GRAM STAIN","price":250},{"id":361,"name":"GRAM STAIN (URETRAL SMEAR)","price":250},{"id":362,"name":"GRAM STAIN (CSF)","price":250},{"id":363,"name":"GRAM STAIN(VITREOUS)","price":250},{"id":364,"name":"AFB CULTURE RAPID - CSF","price":900},{"id":365,"name":"RAPID CULTURE-ENDOMETRIAL CURETTINGS","price":900},{"id":366,"name":"RAPID CULURE-BLOOD","price":900},{"id":367,"name":"AFB CULTURE RAPID - SEMEN","price":900},{"id":368,"name":"AFB CULTURE RAPID - SPUTUM","price":900},{"id":369,"name":"AFB CULTURE RAPID - URINE","price":900},{"id":370,"name":"AFB CULTURE RAPID - PUS","price":900},{"id":371,"name":"AFB CULTURE RAPID - SWAB","price":900},{"id":372,"name":"AFB RADIOMETRIC - SPUTUM","price":900},{"id":373,"name":"AFB RAPID - FLUID","price":900},{"id":374,"name":"AFB CULTURE RAPID - STOOL","price":900},{"id":375,"name":"AFB CULTURE RAPID-BAL","price":900},{"id":376,"name":"AFB CULTURE RAPID - TISSUE","price":900},{"id":377,"name":"Z N STAIN (SPUTUM)","price":250},{"id":378,"name":"Z N STAIN (OTHERS)","price":250},{"id":379,"name":"Z N STAIN (PUS)","price":250},{"id":380,"name":"Z N STAIN (BRONCH)","price":250},{"id":381,"name":"Z N STAIN (URINE)","price":250},{"id":382,"name":"Z N STAIN (CSF)","price":250},{"id":383,"name":"Z N STAIN (ASCITIC FLUID)","price":250},{"id":384,"name":"Z N STAIN (TRACHEAL ASPIRATES)","price":250},{"id":385,"name":"Z N STAIN (PERICARDIAL FLUID)","price":250},{"id":386,"name":"Z N STAIN (SYNOVIAL FLUID)","price":250},{"id":387,"name":"Z N STAIN (SWAB)","price":250},{"id":388,"name":"Z N STAIN (NASAL SMEAR)","price":250},{"id":389,"name":"Z N STAIN (BRONCH LAVA)","price":250},{"id":390,"name":"Z N STAIN (SEMEN)","price":250},{"id":391,"name":"Z N STAIN (SEMEN)","price":250},{"id":392,"name":"Fungal Smear (KOH Prep)","price":250},{"id":393,"name":"Fungal Smear (KOH Prep)","price":250},{"id":394,"name":"Fungal Smear (KOH Prep)","price":250},{"id":395,"name":"Fungal Smear (fluid)","price":250},{"id":396,"name":"Microscopy:","price":250},{"id":397,"name":"Fungal Smear (KOH Prep)","price":250},{"id":398,"name":"Fungal Smear (KOH Prep)","price":250},{"id":399,"name":"Fungal Smear (KOH Prep)","price":250},{"id":400,"name":"Stool for H. Pylori","price":400},{"id":401,"name":"CRPTOCOCCUS","price":300},{"id":402,"name":"CRPTOCOCCUS","price":300},{"id":403,"name":"Positive Result Culture","price":500},{"id":404,"name":"Additional Sensitivity","price":400},{"id":405,"name":"Brucella Serology (Tube Agglutination Method)","price":650},{"id":406,"name":"Widal Serology (Tube Agglutination Method)","price":250},{"id":407,"name":"Brucella (CSF) (Tube Agglutination Method)","price":650},{"id":408,"name":"Cryptococcal Antigen","price":900},{"id":409,"name":"HBV DNA QUANTITATIVE","price":2300},{"id":410,"name":"HCV RNA QUANTITATIVE","price":2300},{"id":411,"name":"HEV-RNA QUANTITATIVE","price":2300},{"id":412,"name":"HSV 1&2 PCR","price":2500},{"id":413,"name":"HLA B27","price":2400},{"id":414,"name":"H1N1","price":2700},{"id":415,"name":"Dengue","price":2000},{"id":416,"name":"Influenza a&b","price":2300},{"id":417,"name":"Salmonella","price":1600},{"id":418,"name":"MTB (TRUNAT)","price":1400},{"id":419,"name":"MTB (RIFAMPICIN)","price":1100},{"id":420,"name":"Covid 19","price":1200},{"id":421,"name":"Mantoux Test","price":150},{"id":422,"name":"Urethral Smear Gonococci","price":250},{"id":423,"name":"Buccal Smear for Barr Bodies","price":300},{"id":424,"name":"Nasal Smear for Eosinophils","price":200},{"id":425,"name":"Occult Blood (Others)","price":150},{"id":426,"name":"CERVICAL/ VAGINAL SM","price":500},{"id":427,"name":"Glucose 75 gms pack","price":40},{"id":428,"name":"Glucose 100 gms pack","price":40},{"id":429,"name":"Glucose 50 gms pack","price":40},{"id":430,"name":"Biopsy Needle (Disposable)","price":2000},{"id":431,"name":"Biopsy Needle (Disposable)","price":1000},{"id":432,"name":"Pooled Sample","price":40},{"id":433,"name":"Blood Culture Vial","price":300},{"id":434,"name":"Tube","price":10},{"id":435,"name":"Urine vial","price":10},{"id":436,"name":"Urine for Cytology / Malignant Cell","price":500},{"id":437,"name":"ORAL SCRAPPING CYTOLOGY","price":300},{"id":438,"name":"ORAL SCRAPPING MALIGNANCY","price":300},{"id":439,"name":"Nipple Discharge","price":400},{"id":440,"name":"MALIGNANT CELL (FLUID)","price":400},{"id":441,"name":"TZANCK SMEAR","price":450},{"id":442,"name":"Throat Swab Microscopy","price":300},{"id":443,"name":"Blodd Micro Fil","price":200},{"id":444,"name":"Pus for Cytology","price":350},{"id":445,"name":"MALG CELL (SPUTUM)","price":600},{"id":446,"name":"SWAB CYTOLOGY","price":200},{"id":447,"name":"Bronchioalveolar Lavage","price":600},{"id":448,"name":"MALG CELL (FLUID)","price":500},{"id":449,"name":"Fluid slides outside","price":250},{"id":450,"name":"Slides for staining","price":200},{"id":451,"name":"FNAC","price":800},{"id":452,"name":"CYTO 2nd Opinion","price":300},{"id":453,"name":"FNAC (Slide Outside)","price":500},{"id":454,"name":"HPE (Small)","price":1000},{"id":455,"name":"HPE Large","price":5000},{"id":456,"name":"HPE Medium","price":2000}];
+let tests = JSON.parse(localStorage.getItem("ms_tests_v3")||"null") || defaultTests;
+let ownerPatients = JSON.parse(localStorage.getItem("ms_owner_patients")||"[]");
+
+const OWNER_PHONE = "6006124059";
+const OWNER_PASSWORD = "bhatf2169@gmail.com";
+const OWNER_SESSION_KEY = "medscope_owner_session";
+
+function money(n){return "INR "+Number(n).toLocaleString("en-IN")}
+
+function show(id){
+  const sections = ["book","about","publicAbout","ownerArea"];
+  sections.forEach(function(x){
+    const el = document.getElementById(x);
+    if (el) el.classList.toggle("hidden", x !== id);
+  });
+  const target = document.getElementById(id);
+  if (target) {
+    target.classList.remove("hidden");
+    setTimeout(function(){
+      target.scrollIntoView({behavior:"smooth", block:"start"});
+    }, 20);
+  }
+}
+
+function openOwnerLogin(){
+  document.getElementById("ownerLoginScreen").classList.add("show");
+  document.getElementById("ownerPhone").focus();
+  clearAuthError();
+}
+function closeOwnerLogin(){
+  document.getElementById("ownerLoginScreen").classList.remove("show");
+}
+function clearAuthError(){
+  document.getElementById("authError").classList.add("hidden");
+}
+function authError(msg){
+  const e=document.getElementById("authError");
+  e.textContent=msg;
+  e.classList.remove("hidden");
+}
+function verifyOwner(){
+  const phone=document.getElementById("ownerPhone").value.replace(/\D/g,"");
+  const password=document.getElementById("ownerPassword").value;
+  if(phone!==OWNER_PHONE){authError("Owner access denied. Only 6006124059 can enter.");return}
+  if(password!==OWNER_PASSWORD){authError("Incorrect owner password.");return}
+  localStorage.setItem(OWNER_SESSION_KEY,"active");
+  closeOwnerLogin();
+  show("ownerArea");
+  ownerTab("dashboard");
+}
+function logout(){
+  localStorage.removeItem(OWNER_SESSION_KEY);
+  show("book");
+}
+
+
+function toggleOnlinePayment(){
+  const selected=document.querySelector('input[name="paymentMethod"]:checked')?.value;
+  document.getElementById("onlinePaymentInfo").classList.toggle("hidden", selected!=="Online");
+}
+
+function deletePatientRequest(index){
+  const p=ownerPatients[index];
+  if(!p) return;
+  const ok=confirm(`Delete this booking request for ${p.name||"this patient"}?\n\nThis will remove it from the MedScope owner records on this device.`);
+  if(!ok) return;
+  ownerPatients.splice(index,1);
+  localStorage.setItem("ms_owner_patients",JSON.stringify(ownerPatients));
+  closePatientDetail();
+  renderOwnerRequests();
+  renderDashboard();
+}
+
+function togglePayment(index){
+  if(!ownerPatients[index]) return;
+  const p=ownerPatients[index];
+  if(p.paymentStatus==="Paid"){
+    p.paymentStatus="Pending";
+    delete p.paymentPaidAt;
+  }else{
+    p.paymentStatus="Paid";
+    p.paymentPaidAt=Date.now();
+  }
+  localStorage.setItem("ms_owner_patients",JSON.stringify(ownerPatients));
+  renderOwnerRequests();
+  renderDashboard();
+}
+function viewPatient(index){
+  const p=ownerPatients[index];
+  if(!p) return;
+  const tests=(p.tests||[]);
+  const subtotal=Number(p.subtotal ?? p.total ?? 0);
+  const discount=Number(p.discount||0);
+  const finalTotal=Math.max(0,Number(p.total ?? subtotal-discount));
+
+  document.getElementById("patientDetailBody").innerHTML=`
+    <span class="badge collected">PATIENT REQUEST</span>
+    <h2 style="margin-bottom:4px">${p.name}</h2>
+    <p class="muted">${p.created||"Booking request"}</p>
+
+    <div class="profileSection">
+      <div class="profileItem"><b> Phone Number</b><p class="muted">${p.phone||"-"}</p></div>
+      <div class="profileItem"><b> Age / Sex</b><p class="muted">${p.age||"-"} / ${p.sex||"-"}</p></div>
+      <div class="profileItem"><b> Collection Type</b><p class="muted">${p.mode||"-"}</p></div>
+      <div class="profileItem"><b> Patient Location</b><p class="muted">${p.location||"-"}</p></div>
+      <div class="profileItem"><b> Payment Method</b><p class="muted">${p.paymentMethod||"Cash"}</p></div>
+      <div class="profileItem"><b> Sample Status</b><p><span class="badge ${p.sampleStatus==="Collected"?"paid":"pending"}">${p.sampleStatus||"Pending"}</span></p></div>
+      <div class="profileItem"><b> Payment Status</b><p><span class="badge ${p.paymentStatus==="Paid"?"paid":"pending"}">${p.paymentStatus||"Pending"}</span></p></div>
+
+      <div class="profileItem full">
+        <b> Tests Selected (${tests.length})</b>
+        <div style="margin-top:8px">${tests.map((t,i)=>`<div style="padding:8px 0;border-bottom:1px solid #e7edf5">${i+1}. ${t}</div>`).join("") || '<span class="muted">No tests recorded</span>'}</div>
+      </div>
+
+      <div class="profileItem full">
+        <div class="discountBox">
+          <b> Apply Patient Discount</b>
+          <p class="muted" style="margin:5px 0 10px">Apply either a percentage or a fixed amount. The final bill is saved with the patient record.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <select id="discountType_${index}">
+              <option value="Amount" ${p.discountType==="Amount"?"selected":""}>INR  Fixed Amount</option>
+              <option value="Percent" ${p.discountType==="Percent"?"selected":""}>% Percentage</option>
+            </select>
+            <input id="discountValue_${index}" type="number" min="0" step="0.01" value="${p.discountValue||0}" placeholder="Discount">
+          </div>
+          <button class="primary" style="margin-top:10px" onclick="applyDiscount(${index})">Apply Discount</button>
+          <button style="margin-top:10px" onclick="clearDiscount(${index})">Remove Discount</button>
+        </div>
+      </div>
+
+      <div class="profileItem full">
+        <div class="billTotal">
+          <div style="display:flex;justify-content:space-between"><span>Subtotal</span><b>${money(subtotal)}</b></div>
+          <div style="display:flex;justify-content:space-between;margin-top:7px"><span>Discount</span><b> ${money(discount)}</b></div>
+          <hr style="border:0;border-top:1px solid #dbe7f5;margin:12px 0">
+          <div style="display:flex;justify-content:space-between;font-size:21px"><span><b>Final Bill</b></span><b>${money(finalTotal)}</b></div>
+        </div>
+      </div>
+
+      <div class="profileItem full"><b> Notes</b><p class="muted">${p.notes||"None"}</p></div>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+      <button class="green" onclick="togglePayment(${index});viewPatient(${index})">${p.paymentStatus==="Paid"?"Mark as unpaid":" Mark as paid"}</button>
+      <button onclick="recordSample(${index});viewPatient(${index})">${p.sampleStatus==="Collected"?"Mark sample pending":" Mark sample collected"}</button>
+      <button class="primary" onclick="downloadBill(${index})"> Download Bill</button>
+      <button class="danger" onclick="deletePatientRequest(${index})"> Delete Booking</button>
+      <button class="green" onclick="sendBillWhatsApp(${index})"> Send Bill on WhatsApp</button>
+      <button onclick="window.location.href='tel:${p.phone||""}'"> Call Patient</button>
+      <button onclick="window.location.href='https://wa.me/91${(p.phone||"").replace(/\\D/g,"")}'"> WhatsApp Patient</button>
+    </div>`;
+  document.getElementById("patientDetailModal").classList.add("show");
+}
+function closePatientDetail(){document.getElementById("patientDetailModal").classList.remove("show")}
+
+
+function applyDiscount(index){
+  const p=ownerPatients[index];
+  if(!p) return;
+  const type=document.getElementById("discountType_"+index).value;
+  const value=Math.max(0,Number(document.getElementById("discountValue_"+index).value)||0);
+  const subtotal=Number(p.subtotal ?? p.total ?? 0);
+  const discount=type==="Percent" ? Math.min(subtotal, subtotal*value/100) : Math.min(subtotal,value);
+  p.subtotal=subtotal;
+  p.discountType=type;
+  p.discountValue=value;
+  p.discount=Number(discount.toFixed(2));
+  p.total=Number((subtotal-discount).toFixed(2));
+  localStorage.setItem("ms_owner_patients",JSON.stringify(ownerPatients));
+  renderOwnerRequests();
+  renderDashboard();
+  viewPatient(index);
+}
+function clearDiscount(index){
+  const p=ownerPatients[index];
+  if(!p) return;
+  p.discountType="Amount";
+  p.discountValue=0;
+  p.discount=0;
+  p.total=Number(p.subtotal ?? p.total ?? 0);
+  localStorage.setItem("ms_owner_patients",JSON.stringify(ownerPatients));
+  renderOwnerRequests();
+  renderDashboard();
+  viewPatient(index);
+}
+
+function sendBillWhatsApp(index){
+  const p=ownerPatients[index];
+  if(!p) return;
+  const subtotal=Number(p.subtotal ?? p.total ?? 0);
+  const discount=Number(p.discount||0);
+  const total=Math.max(0,Number(p.total ?? subtotal-discount));
+  const tests=(p.tests||[]);
+  const phone=(p.phone||"").replace(/\D/g,"");
+
+  if(phone.length<10){
+    alert("This patient does not have a valid WhatsApp phone number.");
+    return;
+  }
+
+  const billNo="MS-"+String(index+1).padStart(5,"0")+"-"+Date.now().toString().slice(-6);
+  const testLines=tests.map((t,i)=>`${i+1}. ${t}`).join("\n");
+
+  const message=
+`*MEDSCOPE - BILL*
+Bill No: ${billNo}
+Date: ${new Date().toLocaleString()}
+
+*Patient:* ${p.name||"-"}
+*Collection:* ${p.mode||"-"}
+
+*Tests:*
+${testLines||"No tests recorded"}
+
+*Subtotal:* ${money(subtotal)}
+*Discount:* ${money(discount)}
+*TOTAL PAYABLE:* ${money(total)}
+
+*Payment Method:* ${p.paymentMethod||"Cash"}
+*Payment Status:* ${p.paymentStatus||"Pending"}
+
+Thank you for choosing *MedScope*.`;
+
+  window.location.href="https://wa.me/91"+phone+"?text="+encodeURIComponent(message);
+}
+
+function downloadBill(index){
+  const p=ownerPatients[index];
+  if(!p) return;
+  const subtotal=Number(p.subtotal ?? p.total ?? 0);
+  const discount=Number(p.discount||0);
+  const total=Math.max(0,Number(p.total ?? subtotal-discount));
+  const tests=(p.tests||[]);
+  const billNo="MS-"+String(index+1).padStart(5,"0")+"-"+Date.now().toString().slice(-6);
+
+  const w=window.open("","_blank");
+  if(!w){alert("Please allow pop-ups for MedScope to download/print the bill.");return}
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>MedScope Bill ${billNo}</title>
+  <style>
+  body{font-family:Arial,sans-serif;margin:0;padding:32px;color:#17233b}
+  .wrap{max-width:760px;margin:auto;border:1px solid #d8e1ed;border-radius:16px;padding:30px}
+  h1{margin:0;color:#1769e0}.muted{color:#66758a}.row{display:flex;justify-content:space-between;gap:20px;padding:8px 0}
+  table{width:100%;border-collapse:collapse;margin-top:20px}th,td{padding:10px;border-bottom:1px solid #e5eaf1;text-align:left}
+  .total{font-size:22px;font-weight:800;border-top:2px solid #17233b;margin-top:10px;padding-top:14px}
+  .paid{color:#16803c;font-weight:700}.pending{color:#b45309;font-weight:700}
+  @media print{body{padding:0}.wrap{border:0}}
+  </style></head><body><div class="wrap">
+  <h1>MedScope</h1><p class="muted">Laboratory Testing - Home Collection - Centre Visit</p>
+  <hr>
+  <div class="row"><b>Bill No.</b><span>${billNo}</span></div>
+  <div class="row"><b>Date</b><span>${new Date().toLocaleString()}</span></div>
+  <h2>Patient Details</h2>
+  <div class="row"><b>Name</b><span>${p.name||"-"}</span></div>
+  <div class="row"><b>Phone</b><span>${p.phone||"-"}</span></div>
+  <div class="row"><b>Collection</b><span>${p.mode||"-"}</span></div>
+  <div class="row"><b>Location</b><span>${p.location||"-"}</span></div>
+  <h2>Tests</h2><table><thead><tr><th>#</th><th>Test</th></tr></thead><tbody>
+  ${tests.map((t,i)=>`<tr><td>${i+1}</td><td>${t}</td></tr>`).join("")}
+  </tbody></table>
+  <div style="margin-top:20px">
+    <div class="row"><span>Subtotal</span><b>${money(subtotal)}</b></div>
+    <div class="row"><span>Discount</span><b> ${money(discount)}</b></div>
+    <div class="row total"><span>Total Payable</span><span>${money(total)}</span></div>
+    <div class="row"><span>Payment Method</span><b>${p.paymentMethod||"Cash"}</b></div>
+    <div class="row"><span>Payment Status</span><b class="${p.paymentStatus==="Paid"?"paid":"pending"}">${p.paymentStatus||"Pending"}</b></div>
+  </div>
+  <p class="muted" style="margin-top:30px">Thank you for choosing MedScope.</p>
+  </div>
+  <script>window.onload=function(){window.print()}<\/script></body></html>`);
+  w.document.close();
+}
+
+function recordSample(index){
+  const p=ownerPatients[index];
+  if(!p) return;
+  p.sampleStatus=p.sampleStatus==="Collected"?"Pending":"Collected";
+  p.sampleCollectedAt=p.sampleStatus==="Collected"?Date.now():null;
+  localStorage.setItem("ms_owner_patients",JSON.stringify(ownerPatients));
+  renderOwnerRequests();
+  renderDashboard();
+}
+function metricTime(p){
+  return Number(p.paymentPaidAt||p.createdAt||new Date(p.created||0).getTime()||0);
+}
+function isSameDay(ts,now){
+  const a=new Date(ts),b=new Date(now);
+  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+}
+function isSameMonth(ts,now){
+  const a=new Date(ts),b=new Date(now);
+  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth();
+}
+function isSameYear(ts,now){
+  return new Date(ts).getFullYear()===new Date(now).getFullYear();
+}
+function renderDashboard(){
+  const data=ownerPatients||[];
+  const now=Date.now();
+  const unique=new Set(data.map(p=>(p.phone||p.name||"").toString().trim().toLowerCase()).filter(Boolean));
+  const paid=data.filter(p=>p.paymentStatus==="Paid");
+  const revenue=paid.reduce((s,p)=>s+Number(p.total||0),0);
+  const cash=paid.filter(p=>(p.paymentMethod||"Cash")==="Cash").reduce((s,p)=>s+Number(p.total||0),0);
+  const online=paid.filter(p=>(p.paymentMethod||"Cash")==="Online").reduce((s,p)=>s+Number(p.total||0),0);
+  const pending=data.filter(p=>p.paymentStatus!=="Paid").reduce((s,p)=>s+Number(p.total||0),0);
+  const today=paid.filter(p=>isSameDay(metricTime(p),now)).reduce((s,p)=>s+Number(p.total||0),0);
+  const month=paid.filter(p=>isSameMonth(metricTime(p),now)).reduce((s,p)=>s+Number(p.total||0),0);
+  const year=paid.filter(p=>isSameYear(metricTime(p),now)).reduce((s,p)=>s+Number(p.total||0),0);
+  const samples=data.filter(p=>p.sampleStatus==="Collected").length;
+  const tests=data.reduce((s,p)=>s+(p.tests||[]).length,0);
+  const avg=data.length?revenue/paid.length:0;
+
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
+  set("dashRequests",data.length); set("dashPatients",unique.size); set("dashSamples",samples);
+  set("dashRevenue",money(revenue)); set("dashCash",money(cash)); set("dashOnline",money(online));
+  set("dashPending",money(pending)); set("dashTests",tests); set("dashToday",money(today));
+  set("dashMonth",money(month)); set("dashYear",money(year)); set("dashAverage",money(avg));
+
+  const home=data.filter(p=>p.mode==="Home Collection").length;
+  const centre=data.filter(p=>p.mode==="Centre Visit").length;
+  const cashPending=data.filter(p=>p.paymentStatus!=="Paid"&&(p.paymentMethod||"Cash")==="Cash").reduce((s,p)=>s+Number(p.total||0),0);
+  const onlinePending=data.filter(p=>p.paymentStatus!=="Paid"&&p.paymentMethod==="Online").reduce((s,p)=>s+Number(p.total||0),0);
+  const breakdown=document.getElementById("dashBreakdown");
+  if(breakdown) breakdown.innerHTML=
+    `<b>Collection:</b> Home Collection ${home} - Centre Visit ${centre}<br>
+     <b>Payments:</b> Cash paid ${money(cash)} - Online paid ${money(online)}<br>
+     <b>Pending:</b> Cash ${money(cashPending)} - Online ${money(onlinePending)}<br>
+     <b>Samples:</b> ${samples} collected - ${Math.max(0,data.length-samples)} pending`;
+
+  const recent=document.getElementById("dashRecent");
+  const latest=[...data].slice(0,8);
+  if(recent) recent.innerHTML=latest.map(p=>`
+    <div class="profileItem" style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+      <div><b>${p.name||"Patient"}</b><p class="muted">${(p.tests||[]).length} test(s) - ${p.mode||"-"} - ${p.paymentMethod||"Cash"}</p></div>
+      <div style="text-align:right"><b>${money(p.total||0)}</b><br><span class="badge ${p.paymentStatus==="Paid"?"paid":"pending"}">${p.paymentStatus||"Pending"}</span></div>
+    </div>`).join("") || '<p class="muted">No patient activity yet.</p>';
+}
+
+function ownerTab(tab){
+  const map={dashboard:"ownerDashboard",requests:"ownerRequests",rates:"ownerRates",profile:"ownerProfile",whatsapp:"ownerWhatsapp"};
+  Object.values(map).forEach(id=>document.getElementById(id).classList.remove("show"));
+  document.getElementById(map[tab]).classList.add("show");
+  if(tab==="dashboard") renderDashboard();
+  if(tab==="requests") renderOwnerRequests();
+  if(tab==="rates") renderOwnerRates();
+}
+
+function renderOwnerRequests(){
+  const q=(document.getElementById("ownerSearch")?.value||"").toLowerCase();
+  const rows=ownerPatients
+    .map((p,originalIndex)=>({p,originalIndex}))
+    .filter(x=>[x.p.name,x.p.phone,x.p.location,(x.p.tests||[]).join(" ")].join(" ").toLowerCase().includes(q));
+
+  document.getElementById("ownerRequestRows").innerHTML=rows.map(({p,originalIndex})=>`
+    <tr onclick="viewPatient(${originalIndex})" style="cursor:pointer" title="Tap to open full patient details">
+      <td><b>${p.name}</b><br><span class="muted">${p.age||"-"} / ${p.sex||"-"}</span></td>
+      <td>${p.phone||"-"}</td>
+      <td>${p.mode||"-"}</td>
+      <td>${p.location||"-"}</td>
+      <td>${(p.tests||[]).join(", ")}</td>
+      <td><span class="badge ${p.paymentStatus==="Paid"?"paid":"pending"}">${p.paymentMethod||"Cash"} - ${p.paymentStatus||"Pending"}</span></td>
+      <td><b>${money(p.total||0)}</b></td>
+      <td><button class="${p.paymentStatus==="Paid"?"danger":"green"}" onclick="event.stopPropagation();togglePayment(${originalIndex})">${p.paymentStatus==="Paid"?"Mark unpaid":"Mark paid"}</button></td>
+    </tr>`).join("") || `<tr><td colspan="8" class="muted">No saved booking requests on this device.</td></tr>`;
+}
+
+function renderOwnerRates(){
+  const el=document.getElementById("ownerTestEditor");
+  const q=(document.getElementById("ownerRateSearch")?.value||"").toLowerCase();
+  el.innerHTML=`<input id="ownerRateSearch" placeholder="Search 456 tests..." oninput="renderOwnerRates()" value="${q}">`+
+  tests.filter(t=>t.name.toLowerCase().includes(q)).map(t=>`
+    <div style="display:flex;gap:10px;align-items:center;margin:8px 0;flex-wrap:wrap">
+      <span class="muted">#${t.id}</span><span style="flex:1;min-width:220px">${t.name}</span>
+      <input id="owner_price_${t.id}" type="number" value="${t.price}" style="width:120px">
+      <button onclick="updateOwnerPrice(${t.id})">Save</button>
+    </div>`).join("");
+}
+
+function updateOwnerPrice(id){
+  const t=tests.find(x=>x.id===id);
+  if(t){
+    t.price=Number(document.getElementById("owner_price_"+id).value)||0;
+    localStorage.setItem("ms_tests_v3",JSON.stringify(tests));
+    renderOwnerRates();
+  }
+}
+
+
+let pendingBooking=null;
+
+function showBookingConfirmation(p){
+  pendingBooking=p;
+  document.getElementById("bookingConfirmBody").innerHTML=
+    `<b>Patient:</b> ${p.name}<br>
+     <b>Service:</b> ${p.mode}<br>
+     <b>Tests:</b> ${(p.tests||[]).join(", ")}<br>
+     <b>Estimated total:</b> ${money(p.total)}<br>
+     <b>Payment:</b> ${p.paymentMethod}`;
+  document.getElementById("bookingConfirmModal").classList.add("show");
+}
+
+function closeBookingConfirmation(){
+  pendingBooking=null;
+  document.getElementById("bookingConfirmModal").classList.remove("show");
+}
+
+function confirmBooking(){
+  if(!pendingBooking) return;
+  const p=pendingBooking;
+
+  // Only confirmed bookings enter the owner's records.
+  ownerPatients.unshift(p);
+  localStorage.setItem("ms_owner_patients",JSON.stringify(ownerPatients));
+
+  const lines=(p.tests||[]).map((name,i)=>`${i+1}. ${name}`).join("\n");
+  const msg=`*MedScope Test Booking Request*\n\n*Patient:* ${p.name}\n*Age:* ${p.age||"Not provided"}\n*Sex:* ${p.sex||"-"}\n*Phone:* ${p.phone}\n*Service:* ${p.mode}\n*Location:* ${p.location}\n\n*Tests Required:*\n${lines}\n\n*Estimated Total:* ${money(p.total)}\n*Payment Method:* ${p.paymentMethod}\n*Payment Status:* Pending\n*Notes:* ${p.notes||"None"}`;
+
+  closeBookingConfirmation();
+  closeModal();
+  window.location.href="https://wa.me/916006124059?text="+encodeURIComponent(msg);
+}
+
+function openPatient(){
+  document.getElementById("modal").classList.add("show");
+  renderChoices();calc();
+}
+function closeModal(){document.getElementById("modal").classList.remove("show")}
+function renderChoices(){
+  const q=(document.getElementById("testFilter")?.value||"").toLowerCase();
+  document.getElementById("testChoices").innerHTML=tests.filter(t=>t.name.toLowerCase().includes(q)).map(t=>
+    `<label><input type="checkbox" value="${t.id}" onchange="calc()"> ${t.name} <span class="muted">(${money(t.price)})</span></label>`
+  ).join("");
+}
+function calc(){
+  const total=[...document.querySelectorAll("#testChoices input:checked")].reduce((s,e)=>{
+    const t=tests.find(x=>x.id===Number(e.value));return s+(t?Number(t.price):0);
+  },0);
+  document.getElementById("total").textContent=money(total);return total;
+}
+function getLocation(){
+  const status=document.getElementById("gpsStatus");
+  if(!navigator.geolocation){status.textContent="GPS unavailable. Enter location manually.";return}
+  status.textContent="Requesting location permission...";
+  navigator.geolocation.getCurrentPosition(pos=>{
+    document.getElementById("location").value=`GPS: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
+    status.textContent="Location captured.";
+  },()=>status.textContent="GPS permission unavailable. Enter the address manually.",
+  {enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+}
+function savePatient(){
+  const name=document.getElementById("name").value.trim();
+  const phone=document.getElementById("phone").value.trim();
+  const location=document.getElementById("location").value.trim();
+  const ids=[...document.querySelectorAll("#testChoices input:checked")].map(x=>Number(x.value));
+
+  if(!name||!phone||!location||!ids.length){
+    alert("Please enter your name, phone, location and select at least one test.");
+    return;
+  }
+
+  const selected=ids.map(id=>tests.find(t=>t.id===id)).filter(Boolean);
+  const total=calc();
+  const paymentMethod=document.querySelector('input[name="paymentMethod"]:checked')?.value || "Cash";
+
+  const p={
+    name,phone,location,
+    age:document.getElementById("age").value,
+    sex:document.getElementById("sex").value,
+    doctor:document.getElementById("doctor").value,
+    mode:document.getElementById("mode").value,
+    sample:document.getElementById("sample").value,
+    paymentMethod,
+    paymentStatus:"Pending",
+    sampleStatus:"Pending",
+    notes:document.getElementById("notes").value,
+    tests:selected.map(t=>t.name),
+    subtotal:total, discount:0, discountType:"Amount", discountValue:0, total,
+    created:new Date().toLocaleString(), createdAt:Date.now(),
+    bookingStatus:"Confirmed"
+  };
+
+  // Use the Android/WebView native confirmation dialog. This is more reliable
+  // than a custom modal inside AppsGeyser.
+  const ok=window.confirm(
+    "Are you sure you want to book these tests?\n\n"+
+    "Patient: "+p.name+"\n"+
+    "Tests: "+p.tests.join(", ")+"\n"+
+    "Estimated total: "+money(p.total)+"\n"+
+    "Payment: "+p.paymentMethod
+  );
+  if(!ok) return;
+
+  // Only confirmed bookings are stored in the Owner section.
+  ownerPatients.unshift(p);
+  try{
+    localStorage.setItem("ms_owner_patients",JSON.stringify(ownerPatients));
+  }catch(e){
+    alert("Booking could not be saved on this device. Please check app storage.");
+    return;
+  }
+
+  const lines=p.tests.map((name,i)=>(i+1)+". "+name).join("\n");
+  const msg="*MedScope Test Booking Request*\n\n"+
+    "*Patient:* "+p.name+"\n"+
+    "*Age:* "+(p.age||"Not provided")+"\n"+
+    "*Sex:* "+(p.sex||"-")+"\n"+
+    "*Phone:* "+p.phone+"\n"+
+    "*Service:* "+p.mode+"\n"+
+    "*Location:* "+p.location+"\n\n"+
+    "*Tests Required:*\n"+lines+"\n\n"+
+    "*Estimated Total:* "+money(p.total)+"\n"+
+    "*Payment Method:* "+p.paymentMethod+"\n"+
+    "*Payment Status:* Pending\n"+
+    "*Notes:* "+(p.notes||"None");
+
+  closeModal();
+
+  const number="916006124059";
+  const encoded=encodeURIComponent(msg);
+
+  // Try the WhatsApp Android app directly. If that isn't handled by the
+  // WebView, fall back to the normal wa.me URL.
+  try{
+    const link=document.createElement("a");
+    link.href="whatsapp://send?phone="+number+"&text="+encoded;
+    link.style.display="none";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }catch(e){}
+
+  setTimeout(function(){
+    if(document.visibilityState==="visible"){
+      window.location.href="https://wa.me/"+number+"?text="+encoded;
+    }
+  },800);
+
+  alert("Booking confirmed. The request has been added to MedScope and WhatsApp will open.");
+}
+
+show("book");
+</script>
+
+
+
+</body></html>
